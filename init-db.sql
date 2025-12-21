@@ -3,6 +3,8 @@
 -- ============================================================
 DROP DATABASE IF EXISTS dwbi;
 CREATE DATABASE dwbi;
+DROP DATABASE IF EXISTS dwbi-warehouse;
+CREATE DATABASE dwbi-warehouse;
 USE dwbi;
 
 -- ============================================================
@@ -170,3 +172,29 @@ CREATE TABLE ProductSupplier (
     FOREIGN KEY (product_id) REFERENCES Product(product_id),
     FOREIGN KEY (supplier_id) REFERENCES Supplier(supplier_id)
 );
+
+use dwbi-warehouse;
+# in dwbi-warehouse
+-- Warehouse statistics
+# order/warehouse
+# Shipment/warehouse
+# total left Inventory/warehouse
+-- money stats
+# media lunara a banilor intrati
+# suma totala lunara a banilor intrati
+-- Products stats
+# best selling products
+# most profitable products
+
+
+# TODO:
+# root este sefu la toti
+# utilizatori - otlp:
+-- - admin-otlp
+-- - app(ceva ce face inserturi)
+-- - dw-user(face statistici)
+-- - web-user-oltp(pt interfata) (crud)
+# utilizator - dw:
+-- - admin-dw
+-- - web-user-dw(pt interfata)
+-- - importer? (iei din otlp spre dw) (intrebare la profa)
