@@ -60,7 +60,7 @@ create table ship_crew (
     company_id    number not null,
     first_name    varchar2(80) not null,
     last_name     varchar2(80) not null,
-    role          varchar2(50) not null, -
+    role          varchar2(50) not null,
     nationality   varchar2(50),
     constraint pk_ship_crew primary key ( id ),
     constraint fk_crew_company foreign key ( company_id )
