@@ -1,10 +1,14 @@
 const express = require('express')
 const oracle = require('oracledb')
+const cors = require("cors");
 const app = express()
 const port = 3001
 const otlp_user = 'app_user_oltp';
 const dw_user = 'app_user_dw';
 const sync_query = require('./sync').sync_query;
+app.use(cors({
+  origin: "http://localhost:3000" // allow React frontend
+}));
 app.use(express.json());
 
 async function connect(username) {
@@ -30,9 +34,21 @@ app.get('/', (req, res) => {
 app.post('/otlp', async (req, res) => {
   const connection = await connect(otlp_user);
   try {
-    string = await connection.execute(req.body.query);
+    const result = await connection.execute(req.body.query, [], {
+      outFormat: oracle.OUT_FORMAT_OBJECT // returns array of objects
+    });
+
+    // Map keys to lowercase for consistency with frontend
+    const mappedRows = result.rows.map(row => {
+      const obj = {};
+      Object.keys(row).forEach(key => {
+        obj[key.toLowerCase()] = row[key];
+      });
+      return obj;
+    });
+
     console.log('Query executed successfully. Closing connection...');
-    res.status(200).json({ message: string.rows });
+    res.status(200).json({ message: mappedRows });
   } catch (err) {
     console.error('Error executing query:', err);
     res.status(500).json({ message: 'Error executing query' });
@@ -45,10 +61,21 @@ app.post('/otlp', async (req, res) => {
 app.post('/dw', async (req, res) => {
   const connection = await connect(dw_user);
   try {
-    string = await connection.execute(req.body.query);
-    res.json(string.rows);
+    const result = await connection.execute(req.body.query, [], {
+      outFormat: oracle.OUT_FORMAT_OBJECT // returns array of objects
+    });
+
+    // Map keys to lowercase for consistency with frontend
+    const mappedRows = result.rows.map(row => {
+      const obj = {};
+      Object.keys(row).forEach(key => {
+        obj[key.toLowerCase()] = row[key];
+      });
+      return obj;
+    });
+
     console.log('Query executed successfully. Closing connection...');
-    res.status(200).json({ message: string.rows });
+    res.status(200).json({ message: mappedRows });
   } catch (err) {
     console.error('Error executing query:', err);
     res.status(500).json({ message: 'Error executing query' });

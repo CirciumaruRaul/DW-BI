@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Typography,
   Paper,
@@ -12,9 +12,10 @@ import {
   TableBody
 } from "@mui/material";
 
-import { fact_shipments } from "../mock/dummyData";
+import { executeOtlpQuery, executeDwQuery } from "../apis/api.js";
 
 export default function Shipments() {
+  const [shipments, setShipments] = useState([]);
   const [form, setForm] = useState({
     ship_id: "",
     departure_time: "",
@@ -27,7 +28,20 @@ export default function Shipments() {
     port_fees: ""
   });
 
-  const [shipments, setShipments] = useState([...fact_shipments]);
+  useEffect(() => {
+    const fetchCompanies = async () => {
+      try {
+        const result = await executeDwQuery("SELECT * FROM fact_shipments");
+        // Backend returns { message: rows }
+        setShipments(result.message || []);
+      } catch (err) {
+        console.error("Error fetching ships:", err);
+      }
+    };
+
+  fetchCompanies();
+  }, []);
+  
 
   const handleSubmit = (e) => {
     e.preventDefault();

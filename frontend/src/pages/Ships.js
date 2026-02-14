@@ -1,4 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+import { executeOtlpQuery, executeDwQuery } from "../apis/api.js";
+
 import {
   Typography,
   Button,
@@ -15,10 +18,8 @@ import {
   Paper
 } from "@mui/material";
 
-import { dim_ships } from "../mock/dummyData";
-
 export default function Ships() {
-  const [ships, setShips] = useState(dim_ships);
+  const [ships, setShips] = useState([]);
   const [open, setOpen] = useState(false);
 
   const [form, setForm] = useState({
@@ -30,6 +31,21 @@ export default function Ships() {
     gross_tonnage: "",
     fuel_type: ""
   });
+
+  // Fetch ships on page load
+  useEffect(() => {
+    const fetchShips = async () => {
+      try {
+        const result = await executeDwQuery("SELECT * FROM dim_ships");
+        // Backend returns { message: rows }
+        setShips(result.message || []);
+      } catch (err) {
+        console.error("Error fetching ships:", err);
+      }
+    };
+
+    fetchShips();
+  }, []);
 
   const handleAddShip = () => {
     const now = new Date().toISOString();

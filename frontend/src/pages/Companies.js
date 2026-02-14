@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Typography,
   Paper,
@@ -12,9 +12,12 @@ import {
   TableBody
 } from "@mui/material";
 
-import { dim_shipping_companies } from "../mock/dummyData";
+// import { dim_shipping_companies } from "../mock/dummyData";
+import { executeOtlpQuery, executeDwQuery } from "../apis/api.js";
 
 export default function Companies() {
+  const [companies, setCompanies] = useState([]);
+  
   const [form, setForm] = useState({
     company_name: "",
     scac_code: "",
@@ -22,24 +25,59 @@ export default function Companies() {
     country_of_origin: ""
   });
 
-  const [companies, setCompanies] = useState([...dim_shipping_companies]);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    const newCompany = {
-      id: Date.now(),
-      ...form
+  useEffect(() => {
+    const fetchCompanies = async () => {
+      try {
+        const result = await executeDwQuery("SELECT * FROM dim_shipping_companies");
+        // Backend returns { message: rows }
+        setCompanies(result.message || []);
+      } catch (err) {
+        console.error("Error fetching ships:", err);
+      }
     };
 
-    setCompanies(prev => [...prev, newCompany]);
+  fetchCompanies();
+  }, []);
 
-    setForm({
-      company_name: "",
-      scac_code: "",
-      imo_company_code: "",
-      country_of_origin: ""
-    });
+  // const handleSubmit = (e) => {
+  //   e.preventDefault();
+
+  //   const newCompany = {
+  //     id: Date.now(),
+  //     ...form
+  //   };
+
+  //   setCompanies(prev => [...prev, newCompany]);
+
+  //   setForm({
+  //     company_name: "",
+  //     scac_code: "",
+  //     imo_company_code: "",
+  //     country_of_origin: ""
+  //   });
+  // };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const query = `
+      INSERT INTO dim_shipping_companies 
+      (company_name, scac_code, imo_company_code, country_of_origin)
+      VALUES (
+        '${form.company_name}',
+        '${form.scac_code}',
+        '${form.imo_company_code}',
+        '${form.country_of_origin}'
+      )
+    `;
+
+    try {
+      await executeOtlpQuery(query);
+      alert("Company inserted successfully");
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   return (
