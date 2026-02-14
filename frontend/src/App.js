@@ -4,6 +4,7 @@ import Layout from "./components/Layout";
 import Dashboard from "./pages/Dashboard";
 import Shipments from "./pages/Shipments";
 import Ships from "./pages/Ships";
+import Analytics from "./pages/Analytics";
 // import Dashboard from "./pages/Companies";
 import './App.css';
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
@@ -33,6 +34,7 @@ function App() {
             <Route path="/companies" element={<Companies />} />
             <Route path="/ships" element={<Ships />} />
             <Route path="/shipments" element={<Shipments />} />
+            <Route path="/analytics" element={<Analytics />} />
           </Route>
         </Routes>
       </Router>

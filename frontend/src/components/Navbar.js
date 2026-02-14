@@ -28,8 +28,11 @@ export default function Navbar() {
           <Link to="/shipments" style={{ color: "inherit", textDecoration: "none" }}>
             Shipments
           </Link>
-          <Link to="/etl" style={{ color: "inherit", textDecoration: "none" }}>
+          {/* <Link to="/etl" style={{ color: "inherit", textDecoration: "none" }}>
             ETL
+          </Link> */}
+          <Link to="/analytics" style={{ color: "inherit", textDecoration: "none" }}>
+            Analytics
           </Link>
         </Box>  
 
