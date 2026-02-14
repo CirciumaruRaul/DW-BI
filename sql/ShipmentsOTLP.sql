@@ -10,7 +10,7 @@ create table shipments_companies (
 );
 
 create table ports (
-    id            number generated always as identity,
+    id            number generated always as identity primary key,
     berth_number  varchar2(20) not null, 
     type          varchar2(30) not null, 
     constraint uq_ports_numar unique ( berth_number )
