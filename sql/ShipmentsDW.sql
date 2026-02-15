@@ -1,4 +1,3 @@
-/* 1. Dimension: Companies (Shipping Lines) */
 create table dim_shipping_companies (
     id                  number generated always as identity,
     company_name        varchar2(150) not null,
@@ -10,7 +9,6 @@ create table dim_shipping_companies (
     constraint uq_dim_comp_imo unique ( imo_company_code )
 );
 
-/* 2. Dimension: Ships */
 create table dim_ships (
     id                  number generated always as identity,
     company_id          number not null,
@@ -30,7 +28,6 @@ create table dim_ships (
     constraint ck_dim_ships_tonnage check ( gross_tonnage > 0 )
 );
 
-/* 3. Dimension: Ports (Specific Berths/Terminals) */
 create table dim_ports (
     id            number generated always as identity,
     berth_number  varchar2(20) not null, 
@@ -39,7 +36,6 @@ create table dim_ports (
     constraint uq_dim_ports_number unique ( berth_number )
 );
 
-/* 4. Dimension: Docks (Geographic Locations) */
 create table dim_docks (
     id            number generated always as identity,
     dock_name     varchar2(150) not null,
@@ -59,7 +55,6 @@ partition by list ( continent ) (
     partition p_other values ( default )
 );
 
-/* 5. Dimension: Status */
 create table dim_status (
     id           number generated always as identity,
     status_type  varchar2(30) not null, -- e.g. 'In Transit', 'Docked', 'Anchored'
@@ -67,11 +62,10 @@ create table dim_status (
     constraint uq_dim_status unique ( status_type )
 );
 
-/* 6. Dimension: Voyage Profiles */
 create table dim_voyage_profiles (
     id               number generated always as identity,
     voyage_number    varchar2(20) not null,
-    transport_type   varchar2(30) not null, -- Cargo, Freight
+    transport_type   varchar2(30) not null,
     is_international number(1) not null,
     created_at       timestamp not null,
     updated_at       timestamp not null,
@@ -80,7 +74,6 @@ create table dim_voyage_profiles (
     constraint ck_dim_voyage_intl check ( is_international in ( 0, 1 ) )
 );
 
-/* 7. Dimension: Time (Standard Calendar) */
 create table dim_time (
     id              number generated always as identity,
     calendar_date   date not null,
@@ -103,26 +96,19 @@ create table dim_time (
     constraint ck_dim_time_weekend check ( is_weekend in ( 0, 1 ) )
 );
 
-/* 8. Fact Table: Shipments (Voyages) */
 create table fact_shipments (
     id                      number generated always as identity,
-    
-    /* Foreign Keys to Dimensions */
     ship_id                 number not null,
-    port_id                 number not null, -- Specific Berth (dim_ports)
+    port_id                 number not null, 
     departure_time_id       number not null,
     arrival_time_id         number not null,
-    departure_dock_id       number not null, -- Location (dim_docks)
-    arrival_dock_id         number not null, -- Location (dim_docks)
+    departure_dock_id       number not null, 
+    arrival_dock_id         number not null,
     voyage_profile_id       number not null,
     status_id               number not null,
-    
-    /* Degenerate Dimensions (timestamps) */
     departure_timestamp     timestamp not null,
     arrival_timestamp       timestamp not null,
-    direction               varchar2(50) not null, -- e.g., "Eastbound"
-    
-    /* Measures */
+    direction               varchar2(50) not null, 
     voyage_duration_hours   number not null,
     teu_utilized            number not null,       
     crew_count              number not null,
@@ -130,14 +116,10 @@ create table fact_shipments (
     port_fees               number(12,2) not null, 
     distance_nautical_miles number not null,
     fuel_consumed           number,                
-    
-    /* Metadata */
     created_at              timestamp not null,
     updated_at              timestamp not null,
-    
+  
     constraint pk_fact_shipments primary key ( id ),
-    
-    /* Foreign Key Constraints */
     constraint fk_fact_ship foreign key ( ship_id )
        references dim_ships ( id ),
     constraint fk_fact_port foreign key ( port_id )
@@ -154,8 +136,6 @@ create table fact_shipments (
        references dim_voyage_profiles ( id ),
     constraint fk_fact_status foreign key ( status_id )
        references dim_status ( id ),
-       
-    /* Data Integrity Checks */
     constraint ck_fact_interval check ( arrival_timestamp > departure_timestamp ),
     constraint ck_fact_duration check ( voyage_duration_hours >= 0 ),
     constraint ck_fact_teu check ( teu_utilized >= 0 ),
@@ -170,7 +150,6 @@ interval ( numtoyminterval( 1, 'MONTH' ) )
 ( 
     partition p_2023_01 values less than ( timestamp '2023-02-01 00:00:00' )
 );
-
 
 -- 4 - ETL
 INSERT INTO dim_shipping_companies (
@@ -410,7 +389,7 @@ SELECT ds.id,
 COMMIT;
 select * from fact_shipments;
 
--- CERINTA 6 - Indexing
+-- 6 - Indexing
 
 begin
    dbms_stats.gather_table_stats(user, 'FACT_SHIPMENTS', cascade => true);
@@ -435,8 +414,8 @@ begin
 end;
 /
 
--- Delayed Holiday Shipments
--- 6 From analysis - natural query
+-- 6 Delayed Holiday Shipments
+-- From analysis - natural query
 explain plan for
 select dd_arr.un_locode || ' - ' || dd_dep.un_locode as route,
        sum(f.teu_utilized) as total_teus
@@ -456,7 +435,7 @@ select dd_arr.un_locode || ' - ' || dd_dep.un_locode as route,
 
 select * from table(dbms_xplan.display(null, null, 'BASIC +PREDICATE'));
 
--- Se observa folosirea lui IX_FS_DEPARTURE_TIMESTAMP si BIX_FS_STATUS_ID / BIX_FS_VOYAGE_PROFILE_ID
+-- We observe IX_FS_DEPARTURE_TIMESTAMP si BIX_FS_STATUS_ID / BIX_FS_VOYAGE_PROFILE_ID
 
 --CERINTA 8 - PARTITIONARE
 
@@ -478,7 +457,7 @@ select * from table(dbms_xplan.display(null, null, 'BASIC +PREDICATE'));
 
 -- 9. OPTIMIZARE QUERY
 
--- Initial sql query
+-- Initial query
 
 explain plan
    for
@@ -524,9 +503,7 @@ select *
 
 -- FOREIGN KEYS ARE ALREADY INDEXED
 
--- CHEILE STRAINE SUNT DEJA INDEXATE
-
--- Se va crea un MV care are rolul de a stoca zborurile internationale grupate dupa companie la nivel de luna.
+-- MV for mountly shipping stats by company and route
 
 create materialized view mv_shipping_stats_monthly build immediate
    refresh on demand
@@ -565,7 +542,7 @@ as
 select *
   from mv_shipping_stats_monthly;
 
--- RESCRIEM QUERY FINAL folosind MW anterior
+-- Rewrite FINAL QUERY using MW
 
 explain plan
    for
@@ -599,6 +576,3 @@ select *
    null,
    'BASIC +PREDICATE'
 ) );
-
--- # TODO FROM HERE - ANALIZA RAPOARTE
--- 10. RAPOARTE
