@@ -100,7 +100,7 @@ create table cargo_taxes (
     id             number generated always as identity,
     container_id   number not null,
     shipment_id    number not null,
-    storage_pos    varchar2(20) not null, -- Location on ship (Bay-Row-Tier)
+    storage_pos    varchar2(20) not null,
     loading_date   timestamp not null,
     tax_amount     number(10, 2) not null,
     constraint pk_cargo_taxes primary key ( id ),
@@ -121,7 +121,7 @@ create table crew_ship_mapping (
         references shipments ( id )
 );
 
--- CERINTA 2 - Generating + Insterting
+-- 2 - Generating + Insterting
 
 begin
    dbms_random.seed(13);

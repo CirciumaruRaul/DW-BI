@@ -88,7 +88,8 @@ app.get('/sync', async (req, res) => {
   const connection = await connect(dw_user);
   try {
     for (const query of sync_query) {
-      string = await connection.execute(query);
+      console.log('Executing sync query:', query);
+      await connection.execute(query);
     }
     res.status(200).json({ message: 'Sync query executed successfully' });
     console.log('Sync query executed successfully. Closing connection...');
