@@ -17,73 +17,96 @@ export default function Analytics() {
   async function fetchAnalytics() {
     try {
       const teuResult = await executeDwQuery(`
-        SELECT s.ship_name, SUM(f.teu_utilized) AS total_teu
+        SELECT 
+            s.ship_name,
+            NVL(SUM(f.teu_utilized), 0) AS total_teu
         FROM fact_shipments f
         JOIN dim_ships s ON f.ship_id = s.id
         GROUP BY s.ship_name
         ORDER BY total_teu DESC
       `);
 
+      const teuRows = teuResult.message || [];
+
       setTeuPerShip(
-        teuResult.map(r => ({
-          label: r.SHIP_NAME,
-          value: Number(r.TOTAL_TEU)
+        teuRows.map(r => ({
+          label: r.ship_name ?? "Unknown",
+          value: Number(r.total_teu ?? 0)
         }))
       );
 
       const cargoResult = await executeDwQuery(`
-        SELECT TRUNC(f.departure_timestamp) AS day,
-               SUM(f.cargo_tonnage) AS total_tonnage
+        SELECT 
+            t.year,
+            t.month,
+            NVL(SUM(f.cargo_tonnage), 0) AS total_tonnage
         FROM fact_shipments f
-        GROUP BY TRUNC(f.departure_timestamp)
-        ORDER BY day
+        JOIN dim_time t ON f.departure_time_id = t.id
+        GROUP BY t.year, t.month
+        ORDER BY t.year, t.month
       `);
 
+      const cargoRows = cargoResult.message || [];
+
       setCargoOverTime(
-        cargoResult.map(r => ({
-          label: r.DAY,
-          value: Number(r.TOTAL_TONNAGE)
+        cargoRows.map(r => ({
+          label: `${r.year}-${String(r.month).padStart(2, '0')}`,
+          value: Number(r.total_tonnage ?? 0)
         }))
       );
 
       const costResult = await executeDwQuery(`
-        SELECT r.route_name,
-               SUM(f.port_fees) AS total_cost
+        SELECT 
+            vp.is_international,
+            NVL(SUM(f.port_fees), 0) AS total_cost
         FROM fact_shipments f
-        JOIN dim_routes r ON f.route_id = r.id
-        GROUP BY r.route_name
-        ORDER BY total_cost DESC
+        JOIN dim_voyage_profiles vp ON f.voyage_profile_id = vp.id
+        GROUP BY vp.is_international
+        ORDER BY vp.is_international
       `);
 
+      const costRows = costResult.message || [];
+
       setCostPerRoute(
-        costResult.map(r => ({
-          label: r.ROUTE_NAME,
-          value: Number(r.TOTAL_COST)
+        costRows.map(r => ({
+          label: r.is_international === 1 ? "International" : "Domestic",
+          value: Number(r.total_cost ?? 0)
         }))
       );
 
       const delayResult = await executeDwQuery(`
-        SELECT r.route_name,
-               COUNT(*) AS delayed_count
+        SELECT 
+            dd.dock_name || ' → ' || ad.dock_name AS route,
+            NVL(COUNT(*), 0) AS delayed_count
         FROM fact_shipments f
-        JOIN dim_routes r ON f.route_id = r.id
-        WHERE f.status = 'DELAYED'
-        GROUP BY r.route_name
+        JOIN dim_docks dd ON f.departure_dock_id = dd.id
+        JOIN dim_docks ad ON f.arrival_dock_id = ad.id
+        JOIN dim_status st ON f.status_id = st.id
+        WHERE st.status_type = 'Delayed'
+        GROUP BY dd.dock_name, ad.dock_name
         ORDER BY delayed_count DESC
       `);
 
+      const delayRows = delayResult.message || [];
+
       setDelaysPerRoute(
-        delayResult.map(r => ({
-          label: r.ROUTE_NAME,
-          value: Number(r.DELAYED_COUNT)
+        delayRows.map(r => ({
+          label: r.route ?? "Unknown",
+          value: Number(r.delayed_count ?? 0)
         }))
       );
+
+      console.log("TEU result:", teuResult);
+      console.log("Cargo result:", cargoResult);
+      console.log("Cost result:", costResult);
+      console.log("Delay result:", delayResult);
 
     } catch (err) {
       console.error("Analytics error:", err);
     }
-  }
 
+  }
+  
 
   return (
     <div style={{ padding: "2rem" }}>
