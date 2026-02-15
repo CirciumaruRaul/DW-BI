@@ -83,7 +83,7 @@ export default function Shipments() {
         Record Shipment
       </Typography>
 
-      <Paper sx={{ p: 3, mb: 4 }}>
+      {/* <Paper sx={{ p: 3, mb: 4 }}>
         <form onSubmit={handleSubmit}>
           <Grid container spacing={2}>
             <Grid item xs={12} md={6}>
@@ -119,6 +119,9 @@ export default function Shipments() {
 
             {[
               ["TEU Utilized", "teu_utilized"],
+              ["Departure Port ID", "departure_port_id"],
+              ["Arrival Port ID", "arrival_port_id"],
+              ["Voyage Number", "voyage_number"],
               ["Cargo Tonnage", "cargo_tonnage"],
               ["Crew Count", "crew_count"],
               ["Fuel Consumed", "fuel_consumed"],
@@ -143,7 +146,7 @@ export default function Shipments() {
             </Grid>
           </Grid>
         </form>
-      </Paper>
+      </Paper> */}
 
       <Typography variant="h6" gutterBottom>
         Shipment History

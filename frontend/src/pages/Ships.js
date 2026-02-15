@@ -49,9 +49,8 @@ export default function Ships() {
 
   const handleAddShip = async () => {
     const query = `
-      INSERT INTO ships (company_id, imo_number, ship_name, build_year, teu_capacity, gross_tonnage, tank_capacity, fuel_type)
+      INSERT INTO ships (imo_number, ship_name, build_year, teu_capacity, gross_tonnage, tank_capacity, fuel_type)
       VALUES (
-        '${form.company_id}',
         '${form.imo_number}',
         '${form.ship_name}', 
         '${form.build_year}',
@@ -75,10 +74,6 @@ export default function Ships() {
       <Typography variant="h4" gutterBottom>
         Ships
       </Typography>
-
-      <Button variant="contained" onClick={() => setOpen(true)} sx={{ mb: 2 }}>
-        Add Ship
-      </Button>
 
       <Paper>
         <Table>
@@ -114,12 +109,6 @@ export default function Ships() {
         <DialogContent
           sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}
         >
-          <TextField
-            label="Company ID"
-            value={form.company_id}
-            onChange={e => setForm({ ...form, company_id: e.target.value })}
-          />
-
           <TextField
             label="Ship Name"
             value={form.ship_name}

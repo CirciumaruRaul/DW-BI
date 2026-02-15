@@ -40,7 +40,7 @@ export default function Companies() {
   }, []);
 
   // send insert query with executeOtlpQuery
-  const handlerInsert = async () => {
+  const handleInsert = async () => {
     const query = `
       INSERT INTO shipments_companies (name, scac_code, imo_company_num, country_of_origin) 
       VALUES (
@@ -58,28 +58,6 @@ export default function Companies() {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    const query = `
-      INSERT INTO dim_shipping_companies 
-      (company_name, scac_code, imo_company_code, country_of_origin)
-      VALUES (
-        '${form.company_name}',
-        '${form.scac_code}',
-        '${form.imo_company_code}',
-        '${form.country_of_origin}'
-      )
-    `;
-
-    try {
-      await executeOtlpQuery(query);
-      alert("Company inserted successfully");
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
   return (
     <>
       <Typography variant="h4" gutterBottom>
@@ -87,10 +65,10 @@ export default function Companies() {
       </Typography>
 
       <Paper sx={{ p: 3, mb: 4 }}>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleInsert}>
           <Grid container spacing={2}>
             {[
-              ["Company Name", "name"],
+              ["Company Name", "company_name"],
               ["SCAC Code", "scac_code"],
               ["IMO Company Code", "imo_company_num"],
               ["Country", "country_of_origin"]
@@ -106,7 +84,7 @@ export default function Companies() {
             ))}
 
             <Grid item xs={12}>
-              <Button variant="contained" type="submit" onClick={handlerInsert}>
+              <Button variant="contained" type="submit" onClick={handleInsert}>
                 Add Company
               </Button>
             </Grid>

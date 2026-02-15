@@ -1,5 +1,4 @@
 import { Typography, Grid, Paper } from "@mui/material";
-import DashboardCards from "../components/DashboardCards";
 
 import { useState } from "react";
 import { executeOtlpQuery, executeDwQuery, syncWarehouse } from "../apis/api.js";
