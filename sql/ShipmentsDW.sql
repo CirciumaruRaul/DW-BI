@@ -436,7 +436,7 @@ end;
 /
 
 -- Delayed Holiday Shipments
-
+-- 6 From analysis - natural query
 explain plan for
 select dd_arr.un_locode || ' - ' || dd_dep.un_locode as route,
        sum(f.teu_utilized) as total_teus
@@ -447,7 +447,7 @@ select dd_arr.un_locode || ' - ' || dd_dep.un_locode as route,
    select p.id from dim_voyage_profiles p where p.is_international = 1
  )
    and f.status_id in (
-   select s.id from dim_status s where s.status_type = 'DELAYED'
+   select s.id from dim_status s where s.status_type = 'delayed'
  )
    and f.departure_timestamp between to_timestamp('2025-12-24 12:00', 'YYYY-MM-DD HH24:MI') 
                                  and to_timestamp('2025-12-27 18:00', 'YYYY-MM-DD HH24:MI')
@@ -502,7 +502,7 @@ on p.id = f.voyage_profile_id
 on dd_dep.id = f.departure_dock_id
   join dim_docks dd_arr
 on dd_arr.id = f.arrival_dock_id
- where s.status_type = 'COMPLETED'
+ where s.status_type = 'docked'
    and p.is_international = 1
    and dd_dep.continent = 'Europe'
    and dd_arr.continent <> 'Europe'
