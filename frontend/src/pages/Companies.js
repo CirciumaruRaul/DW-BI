@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import {
   Typography,
   Paper,
@@ -25,7 +25,6 @@ export default function Companies() {
     country_of_origin: ""
   });
 
-
   useEffect(() => {
     const fetchCompanies = async () => {
       try {
@@ -40,23 +39,24 @@ export default function Companies() {
   fetchCompanies();
   }, []);
 
-  // const handleSubmit = (e) => {
-  //   e.preventDefault();
-
-  //   const newCompany = {
-  //     id: Date.now(),
-  //     ...form
-  //   };
-
-  //   setCompanies(prev => [...prev, newCompany]);
-
-  //   setForm({
-  //     company_name: "",
-  //     scac_code: "",
-  //     imo_company_code: "",
-  //     country_of_origin: ""
-  //   });
-  // };
+  // send insert query with executeOtlpQuery
+  const handlerInsert = async () => {
+    const query = `
+      INSERT INTO shipments_companies (name, scac_code, imo_company_num, country_of_origin) 
+      VALUES (
+        '${form.company_name}',
+        '${form.scac_code}',
+        '${form.imo_company_num}',
+        '${form.country_of_origin}'
+      )
+    `; 
+    try {
+      await executeOtlpQuery(query);
+      alert("Company inserted successfully");
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -90,9 +90,9 @@ export default function Companies() {
         <form onSubmit={handleSubmit}>
           <Grid container spacing={2}>
             {[
-              ["Company Name", "company_name"],
+              ["Company Name", "name"],
               ["SCAC Code", "scac_code"],
-              ["IMO Company Code", "imo_company_code"],
+              ["IMO Company Code", "imo_company_num"],
               ["Country", "country_of_origin"]
             ].map(([label, key]) => (
               <Grid item xs={12} md={6} key={key}>
@@ -106,7 +106,7 @@ export default function Companies() {
             ))}
 
             <Grid item xs={12}>
-              <Button variant="contained" type="submit">
+              <Button variant="contained" type="submit" onClick={handlerInsert}>
                 Add Company
               </Button>
             </Grid>

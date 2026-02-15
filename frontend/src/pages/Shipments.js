@@ -43,33 +43,38 @@ export default function Shipments() {
   }, []);
   
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const dep = new Date(form.departure_time);
-    const arr = new Date(form.arrival_time);
-    const duration = (arr - dep) / (1000 * 60 * 60);
+    // const dep = new Date(form.departure_time);
+    // const arr = new Date(form.arrival_time);
+    // const duration = (arr - dep) / (1000 * 60 * 60);
 
-    const newShipment = {
-      id: Date.now(),
-      ...form,
-      voyage_duration_hours: duration,
-      status: "Completed"
-    };
+    const query = `INSERT INTO shipments (
+            ship_id, berth_id, departure_port_id, arrival_port_id, 
+            voyage_number, departure_date, arrival_date, 
+            distance_nm, transport_type, status, is_international
+        ) VALUES (
+            '${form.ship_id}',
+            '${form.berth_id || "NULL"}',
+            '${form.departure_port_id || "NULL"}',
+            '${form.arrival_port_id || "NULL"}',
+            '${form.voyage_number || "NULL"}',
+            TO_TIMESTAMP('${form.departure_time}', 'YYYY-MM-DD"T"HH24:MI'),
+            TO_TIMESTAMP('${form.arrival_time}', 'YYYY-MM-DD"T"HH24:MI'),
+            '${form.distance_nm || "NULL"}',
+            '${form.transport_type || "NULL"}',
+            '${form.status || "NULL"}',
+            '${form.is_international || "NULL"}'
+        )`;
 
-    setShipments(prev => [...prev, newShipment]);
-
-    setForm({
-      ship_id: "",
-      departure_time: "",
-      arrival_time: "",
-      teu_utilized: "",
-      cargo_tonnage: "",
-      crew_count: "",
-      fuel_consumed: "",
-      distance_nm: "",
-      port_fees: ""
-    });
+      try{
+        await executeOtlpQuery(query);
+        alert("Shipment recorded successfully");
+      } catch (err) {
+        console.error("Error recording shipment:", err);
+        alert("Error recording shipment");
+      }
   };
 
   return (
@@ -96,7 +101,7 @@ export default function Shipments() {
                 label="Departure Time"
                 InputLabelProps={{ shrink: true }}
                 fullWidth
-                value={form.departure_time}
+                value={form.departure_timestamp}
                 onChange={e => setForm({ ...form, departure_time: e.target.value })}
               />
             </Grid>
@@ -107,7 +112,7 @@ export default function Shipments() {
                 label="Arrival Time"
                 InputLabelProps={{ shrink: true }}
                 fullWidth
-                value={form.arrival_time}
+                value={form.arrival_timestamp}
                 onChange={e => setForm({ ...form, arrival_time: e.target.value })}
               />
             </Grid>
@@ -160,7 +165,7 @@ export default function Shipments() {
                 <TableCell>{s.id}</TableCell>
                 <TableCell>{s.ship_id}</TableCell>
                 <TableCell>{s.voyage_duration_hours?.toFixed(2)}</TableCell>
-                <TableCell>{s.status}</TableCell>
+                <TableCell>{s.status_id}</TableCell>
               </TableRow>
             ))}
           </TableBody>

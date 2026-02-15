@@ -36,16 +36,6 @@ export default function Navbar() {
           </Link>
         </Box>  
 
-        {/* Right side icons */}
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-          <Link to="/notifications" style={{ color: "inherit" }}>
-            <IconButton color="inherit">
-              <NotificationsIcon />
-            </IconButton>
-          </Link>
-          <Avatar alt="User Avatar" src="/static/images/avatar/1.jpg" />
-        </Box>
-
       </Toolbar>
     </AppBar>
   );

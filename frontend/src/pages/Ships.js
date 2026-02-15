@@ -47,34 +47,27 @@ export default function Ships() {
     fetchShips();
   }, []);
 
-  const handleAddShip = () => {
-    const now = new Date().toISOString();
-
-    const newShip = {
-      id: Date.now(),
-      company_id: Number(form.company_id),
-      imo_number: form.imo_number,
-      ship_name: form.ship_name,
-      build_year: Number(form.build_year),
-      teu_capacity: Number(form.teu_capacity),
-      gross_tonnage: Number(form.gross_tonnage),
-      fuel_type: form.fuel_type,
-      created_at: now,
-      updated_at: now
-    };
-
-    setShips(prev => [...prev, newShip]);
-    setOpen(false);
-
-    setForm({
-      company_id: "",
-      imo_number: "",
-      ship_name: "",
-      build_year: "",
-      teu_capacity: "",
-      gross_tonnage: "",
-      fuel_type: ""
-    });
+  const handleAddShip = async () => {
+    const query = `
+      INSERT INTO ships (company_id, imo_number, ship_name, build_year, teu_capacity, gross_tonnage, tank_capacity, fuel_type)
+      VALUES (
+        '${form.company_id}',
+        '${form.imo_number}',
+        '${form.ship_name}', 
+        '${form.build_year}',
+        '${form.teu_capacity}',
+        '${form.gross_tonnage}',
+        '${form.tank_capacity}',
+        '${form.fuel_type}'
+      )
+    `;
+    try {
+      executeOtlpQuery(query);
+      alert("Ship added successfully");
+      setOpen(false);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   return (
@@ -123,7 +116,6 @@ export default function Ships() {
         >
           <TextField
             label="Company ID"
-            type="number"
             value={form.company_id}
             onChange={e => setForm({ ...form, company_id: e.target.value })}
           />
@@ -159,6 +151,13 @@ export default function Ships() {
             type="number"
             value={form.gross_tonnage}
             onChange={e => setForm({ ...form, gross_tonnage: e.target.value })}
+          />
+
+          <TextField
+            label="Tank Capacity"
+            type="number"
+            value={form.tank_capacity}
+            onChange={e => setForm({ ...form, tank_capacity: e.target.value })}
           />
 
           <TextField
