@@ -1,8 +1,8 @@
 create table dim_shipping_companies (
     id                  number generated always as identity,
     company_name        varchar2(150) not null,
-    scac_code           varchar2(10) not null, -- Standard Carrier Alpha Code
-    imo_company_code    varchar2(10) not null, -- IMO Company Number
+    scac_code           varchar2(10) not null, 
+    imo_company_code    varchar2(10) not null,
     country_of_origin   varchar2(50) not null,
     constraint pk_dim_companies primary key ( id ),
     constraint uq_dim_comp_scac unique ( scac_code ),
@@ -12,10 +12,10 @@ create table dim_shipping_companies (
 create table dim_ships (
     id                  number generated always as identity,
     company_id          number not null,
-    imo_number          varchar2(30) not null, -- Unique Ship ID
+    imo_number          varchar2(30) not null,
     ship_name           varchar2(80) not null,
     build_year          number(4) not null,
-    teu_capacity        number not null,       -- Twenty-foot Equivalent Unit
+    teu_capacity        number not null,
     gross_tonnage       number not null,
     fuel_type           varchar2(30) not null,
     created_at          timestamp not null,
@@ -31,7 +31,7 @@ create table dim_ships (
 create table dim_ports (
     id            number generated always as identity,
     berth_number  varchar2(20) not null, 
-    berth_type    varchar2(30) not null, -- Container, Bulk, etc.
+    berth_type    varchar2(30) not null,
     constraint pk_dim_ports primary key ( id ),
     constraint uq_dim_ports_number unique ( berth_number )
 );
@@ -39,7 +39,7 @@ create table dim_ports (
 create table dim_docks (
     id            number generated always as identity,
     dock_name     varchar2(150) not null,
-    un_locode     varchar2(10) not null, -- UN Location Code
+    un_locode     varchar2(10) not null,
     city          varchar2(100) not null,
     country       varchar2(100) not null,
     continent     varchar2(50) not null,
@@ -57,7 +57,7 @@ partition by list ( continent ) (
 
 create table dim_status (
     id           number generated always as identity,
-    status_type  varchar2(30) not null, -- e.g. 'In Transit', 'Docked', 'Anchored'
+    status_type  varchar2(30) not null,
     constraint pk_dim_status primary key ( id ),
     constraint uq_dim_status unique ( status_type )
 );
@@ -538,7 +538,6 @@ as
              extract(month from f.departure_timestamp),
              dd_dep.continent,
              dd_arr.continent;
-
 select *
   from mv_shipping_stats_monthly;
 
