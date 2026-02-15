@@ -16,9 +16,6 @@ export default function Analytics() {
 
   async function fetchAnalytics() {
     try {
-      /* -----------------------------
-         1️⃣ TEU per Ship (Operational KPI)
-      -------------------------------- */
       const teuResult = await executeDwQuery(`
         SELECT s.ship_name, SUM(f.teu_utilized) AS total_teu
         FROM fact_shipments f
@@ -34,9 +31,6 @@ export default function Analytics() {
         }))
       );
 
-      /* -----------------------------
-         2️⃣ Cargo Over Time (Monitoring)
-      -------------------------------- */
       const cargoResult = await executeDwQuery(`
         SELECT TRUNC(f.departure_timestamp) AS day,
                SUM(f.cargo_tonnage) AS total_tonnage
@@ -52,9 +46,6 @@ export default function Analytics() {
         }))
       );
 
-      /* -----------------------------
-         3️⃣ Cost per Route (Cost Analysis)
-      -------------------------------- */
       const costResult = await executeDwQuery(`
         SELECT r.route_name,
                SUM(f.port_fees) AS total_cost
@@ -71,9 +62,6 @@ export default function Analytics() {
         }))
       );
 
-      /* -----------------------------
-         4️⃣ Delays per Route (Route & Status Analysis)
-      -------------------------------- */
       const delayResult = await executeDwQuery(`
         SELECT r.route_name,
                COUNT(*) AS delayed_count
